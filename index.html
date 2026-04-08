@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLFLIX Homework | Superman & Lois: The Origin</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        netflixRed: '#E50914',
+                        superBlue: '#005bb5',
+                        superDark: '#011c38',
+                        superRed: '#e60000',
+                        superYellow: '#f1c40f',
+                        kryptonite: '#2ecc71',
+                        surface: '#181818',
+                        success: '#2b9348'
+                    },
+                    fontFamily: {
+                        bebas: ['"Bebas Neue"', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* FIXED VIEWPORT - STRICTLY NO BODY SCROLLING */
+        body {
+            background-color: #011c38;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Dynamic Background System */
+        #dynamic-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1618519764620-7403abdbdf9a?auto=format&fit=crop&q=80');
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            opacity: 0.2; z-index: 0; transition: background-image 1.5s ease-in-out, opacity 1.5s ease-in-out;
+            pointer-events: none; filter: contrast(1.2) brightness(0.6);
+        }
+        #bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, #011c38 100%),
+                        linear-gradient(to top, #011c38 0%, rgba(1,28,56,0.7) 50%, #011c38 100%);
+            z-index: 1; pointer-events: none;
+        }
+
+        /* Fixed Step Management */
+        main {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .step-container {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: none; opacity: 0;
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 2rem; z-index: 10;
+        }
+        .step-container.active {
+            display: flex; opacity: 1; animation: focusIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes focusIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); filter: blur(5px); }
+            to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(1, 28, 56, 0.85);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(241, 196, 15, 0.2); border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(241, 196, 15, 0.15);
+            max-width: 950px; width: 100%;
+            max-height: 82vh; 
+            overflow-y: auto; 
+            padding: 3rem;
+            position: relative;
+        }
+        
+        .glass-panel::-webkit-scrollbar { width: 8px; }
+        .glass-panel::-webkit-scrollbar-track { background: transparent; }
+        .glass-panel::-webkit-scrollbar-thumb { background: rgba(230, 0, 0, 0.5); border-radius: 10px; }
+
+        .netflix-title { font-family: 'Bebas Neue', sans-serif; letter-spacing: 3px; }
+        .super-gradient {
+            background: linear-gradient(90deg, #005bb5, #e60000, #f1c40f);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+
+        /* Capsules */
+        .capsule {
+            display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px;
+            background: rgba(0, 91, 181, 0.3); border: 1px solid #005bb5; border-radius: 500px;
+            font-size: 1rem; font-weight: bold; letter-spacing: 0.1em; color: #FFF;
+            text-transform: uppercase; box-shadow: 0 4px 15px rgba(0, 91, 181, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .capsule.red { border-color: #e60000; background: rgba(230, 0, 0, 0.2); box-shadow: 0 4px 15px rgba(230, 0, 0, 0.3); }
+
+        /* Buttons */
+        .btn-netflix {
+            background-color: #e60000; color: #FFF; font-weight: 800;
+            padding: 16px 36px; border-radius: 8px; transition: all 0.3s; 
+            text-transform: uppercase; letter-spacing: 2px; font-size: 1.2rem;
+            box-shadow: 0 8px 25px rgba(230, 0, 0, 0.3); border: none; cursor: pointer;
+        }
+        .btn-netflix:hover { background-color: #ff1a1a; transform: scale(1.02); box-shadow: 0 12px 35px rgba(230, 0, 0, 0.5); }
+        .btn-netflix:disabled { background-color: #1a2a3a; color: #444; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Quiz Options */
+        .quiz-option {
+            background: rgba(0, 0, 0, 0.5); border: 2px solid #005bb5; color: #FFF;
+            padding: 15px 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
+            font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; gap: 12px;
+        }
+        .quiz-option:hover { border-color: #f1c40f; background: rgba(241, 196, 15, 0.1); transform: translateX(5px); }
+        .quiz-option.correct { border-color: #2b9348; background: rgba(43, 147, 72, 0.3); }
+        .quiz-option.incorrect { border-color: #e60000; background: rgba(230, 0, 0, 0.3); animation: shake 0.4s; }
+
+        /* Sentence Builder */
+        .sb-word {
+            background: #FFF; color: #011c38; font-weight: 800; padding: 12px 24px; border-radius: 8px;
+            cursor: pointer; user-select: none; transition: all 0.2s; border: 3px solid transparent;
+            font-size: 1.3rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-bottom: 4px solid #ccc;
+        }
+        .sb-word:hover { transform: translateY(-4px); border-bottom-color: #005bb5; }
+        .sb-dropzone { min-height: 100px; border: 3px dashed rgba(255, 255, 255, 0.3); border-radius: 16px; padding: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; transition: all 0.3s; background: rgba(0,0,0,0.3); }
+        .sb-dropzone.correct { border-color: #2b9348; background: rgba(43, 147, 72, 0.15); }
+        .sb-dropzone.incorrect { border-color: #e60000; background: rgba(230, 0, 0, 0.15); animation: shake 0.4s; }
+
+        /* Grammar Sandbox */
+        .grammar-btn {
+            background: #011c38; border: 2px solid #005bb5; color: #FFF; padding: 12px 24px; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-weight: bold; font-size: 1.2rem;
+        }
+        .grammar-btn:hover { border-color: #f1c40f; }
+        .grammar-btn.active { background: #f1c40f; border-color: #f1c40f; color: #000; box-shadow: 0 0 15px rgba(241, 196, 15, 0.6); }
+
+        /* Kryptonian Crystals */
+        .crystal-slot {
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(0, 91, 181, 0.4));
+            border: 2px solid #005bb5; border-radius: 8px 8px 30px 30px;
+            padding: 20px; text-align: center; color: white; font-weight: bold; font-size: 2rem;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(0, 91, 181, 0.2), inset 0 0 15px rgba(0, 91, 181, 0.2);
+            clip-path: polygon(10% 0, 90% 0, 100% 20%, 100% 80%, 50% 100%, 0 80%, 0 20%);
+            min-height: 120px; display: flex; align-items: center; justify-content: center; margin: 0 auto; width: 80%;
+        }
+        .crystal-slot.activated {
+            background: linear-gradient(135deg, rgba(241, 196, 15, 0.2), rgba(230, 0, 0, 0.5));
+            border-color: #f1c40f; color: #f1c40f;
+            box-shadow: 0 0 30px rgba(230, 0, 0, 0.4), inset 0 0 20px rgba(241, 196, 15, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* Phantom Zone Projector */
+        .phantom-slot {
+            background: radial-gradient(circle, rgba(230,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            border: 2px solid #e60000; border-radius: 50%;
+            width: 200px; height: 200px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; font-weight: bold; color: #fff;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 30px rgba(230,0,0,0.3), inset 0 0 40px rgba(230,0,0,0.5);
+            text-align: center; padding: 20px; line-height: 1.2;
+        }
+        .phantom-slot.activated {
+            box-shadow: 0 0 50px #e60000, inset 0 0 50px #e60000;
+            text-shadow: 0 0 10px #fff;
+            border-color: #ff1a1a;
+        }
+
+        /* Heat Vision Error Detection */
+        .error-text span { 
+            cursor: pointer; padding: 4px 10px; border-radius: 6px; transition: all 0.3s; font-weight: bold; display: inline-block;
+        }
+        .error-text span:hover { 
+            color: #ffcccc; text-shadow: 0 0 10px #e60000; background: rgba(230, 0, 0, 0.2); transform: scale(1.05);
+        }
+        .error-text span.wrong-clicked { color: #2ecc71; text-shadow: 0 0 15px #2ecc71; background: rgba(46, 204, 113, 0.1); }
+        .error-text span.correct-clicked { animation: shake 0.4s; color: #666; pointer-events: none; }
+
+        /* Chat Scenarios */
+        .chat-bubble { max-width: 85%; padding: 14px 20px; border-radius: 20px; font-size: 1.2rem; line-height: 1.4; margin-bottom: 12px; }
+        .chat-left { background: #005bb5; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-right { background: #e60000; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+    </style>
+</head>
+<body class="text-lg md:text-xl">
+
+    <div id="dynamic-bg"></div>
+    <div id="bg-overlay"></div>
+
+    <header class="h-20 md:h-24 flex items-center justify-between px-8 md:px-10 shrink-0 relative z-20 bg-gradient-to-b from-[#011c38]/90 to-transparent">
+        <div class="flex items-center gap-6">
+            <span class="netflix-title text-4xl md:text-5xl text-netflixRed tracking-widest font-bold">WOLFLIX</span>
+            <span class="px-3 py-1 border border-superYellow text-superYellow rounded text-xs tracking-widest uppercase hidden md:block font-bold">Homework Edition</span>
+        </div>
+
+        <div class="flex-1 max-w-2xl mx-12 hidden lg:block">
+            <div class="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-superBlue transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-8">
+            <button onclick="toggleFullscreen()" class="text-gray-300 hover:text-white transition-colors" title="Fullscreen">
+                <i data-lucide="maximize" class="w-7 h-7"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="lesson-container">
+
+        <!-- STEP 1: Cover -->
+        <section class="step-container active">
+            <div class="text-center">
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                    <span class="capsule"><i data-lucide="bar-chart" class="w-5 h-5"></i> Level A2</span>
+                    <span class="capsule red"><i data-lucide="clock" class="w-5 h-5"></i> Mission: Simple Past</span>
+                </div>
+
+                <h1 class="netflix-title text-[5rem] md:text-[8rem] lg:text-[10rem] super-gradient drop-shadow-2xl mb-4 leading-none text-center">
+                    SUPERMAN & LOIS
+                </h1>
+                <p class="text-3xl md:text-5xl text-white font-light tracking-[0.4em] uppercase drop-shadow-lg mb-10">
+                    Fortress Archives
+                </p>
+                
+                <button onclick="nextStep()" class="btn-netflix">Initialize Diagnostics</button>
+            </div>
+        </section>
+
+        <!-- STEP 2: Briefing -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel text-center">
+                <h1 class="netflix-title text-5xl md:text-7xl text-white mb-6 drop-shadow-lg">Homework Briefing</h1>
+                
+                <p class="text-2xl text-gray-300 leading-relaxed mb-10 max-w-4xl mx-auto">
+                    Welcome to the Fortress Archives. Clark Kent needs to restore his memory files. Complete the diagnostics using the <strong class="text-superYellow">Simple Past</strong> to repair the system.
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-8 text-left">
+                    <div class="bg-black/50 p-8 rounded-xl border-l-8 border-superBlue shadow-lg">
+                        <h3 class="font-bold text-white text-2xl mb-4 flex items-center gap-3"><i data-lucide="target" class="text-superBlue"></i> Targets</h3>
+                        <ul class="text-gray-300 space-y-3 text-lg">
+                            <li>• Regular Verbs (+ ED)</li>
+                            <li>• Irregular Verbs</li>
+                            <li>• Negative Form (Didn't)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-black/50 p-8 rounded-xl border-l-8 border-superRed shadow-lg">
+                        <h3 class="font-bold text-white text-2xl mb-4 flex items-center gap-3"><i data-lucide="activity" class="text-superRed"></i> Status</h3>
+                        <p class="text-gray-300 text-xl leading-relaxed italic">Complete all 8 interactive tasks with Kryptonian precision.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3: Vocab Quiz -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel text-center">
+                <div class="capsule mb-6" style="border-color:#005bb5; color:#005bb5;">Task 1: Vocabulary</div>
+                <h2 class="netflix-title text-5xl mb-8">Memory Recovery</h2>
+                <p class="text-2xl text-gray-300 mb-10">Choose the correct word from the opening scene.</p>
+
+                <div class="bg-black/40 p-8 rounded-xl mb-10 text-center border border-gray-700 max-w-3xl mx-auto">
+                    <p class="text-3xl font-light text-white italic">"My most <span class="font-bold text-superYellow border-b-4 border-superYellow px-4 pb-1">_______</span> memories are of the days when my life changed."</p>
+                </div>
+
+                <div class="flex flex-col gap-4 max-w-2xl mx-auto" id="quiz-1">
+                    <div class="quiz-option" onclick="checkQuiz(this, 'quiz-1', true)">
+                        <div class="w-10 h-10 rounded-full border-2 border-gray-400 flex items-center justify-center shrink-0">A</div>
+                        vivid
+                    </div>
+                    <div class="quiz-option" onclick="checkQuiz(this, 'quiz-1', false)">
+                        <div class="w-10 h-10 rounded-full border-2 border-gray-400 flex items-center justify-center shrink-0">B</div>
+                        angry
+                    </div>
+                    <div class="quiz-option" onclick="checkQuiz(this, 'quiz-1', false)">
+                        <div class="w-10 h-10 rounded-full border-2 border-gray-400 flex items-center justify-center shrink-0">C</div>
+                        tall
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 4: Syntax Builder 1 (Regular) -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel">
+                <div class="inline-flex items-center gap-3 text-superBlue mb-4">
+                    <i data-lucide="layers" class="w-8 h-8"></i>
+                    <span class="font-bold tracking-widest text-xl uppercase">Task 2: Regular Verbs</span>
+                </div>
+                <h2 class="netflix-title text-6xl mb-6">The Journey</h2>
+                <p class="text-gray-300 mb-10 text-2xl">Unscramble the words to make a past sentence. Remember the "-ED".</p>
+
+                <div id="dropzone-1" class="sb-dropzone mb-10" ondragover="event.preventDefault()"></div>
+                
+                <div id="wordbank-1" class="flex flex-wrap justify-center gap-6 mb-10">
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-1', 'wordbank-1')">Metropolis</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-1', 'wordbank-1')">moved</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-1', 'wordbank-1')">He</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-1', 'wordbank-1')">to</div>
+                </div>
+
+                <button onclick="checkSentenceBuilder('dropzone-1', ['He', 'moved', 'to', 'Metropolis'])" class="btn-netflix w-full">Verify Syntax</button>
+                <p id="sb-feedback-1" class="text-center mt-8 hidden font-bold text-3xl"></p>
+            </div>
+        </section>
+
+        <!-- STEP 5: Error Detection 1 (Heat Vision) -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel">
+                <div class="inline-flex items-center gap-3 text-superRed mb-4">
+                    <i data-lucide="flame" class="w-8 h-8"></i>
+                    <span class="font-bold tracking-widest text-xl uppercase">Task 3: Heat Vision</span>
+                </div>
+                <h2 class="netflix-title text-6xl mb-6">Find the Kryptonite</h2>
+                <p class="text-gray-300 mb-12 text-2xl">Hover to use Heat Vision. Click the INCORRECT regular verb to fix the spelling!</p>
+
+                <div class="text-center text-4xl font-bold leading-loose error-text bg-black/50 p-12 rounded-xl border-l-8 border-kryptonite mb-8 shadow-lg">
+                    "My <span onclick="checkError(this, false, '', 'error-feedback-1')">mother</span> <span onclick="checkError(this, true, 'called', 'error-feedback-1')" class="wrong-target">calleded</span> <span onclick="checkError(this, false, '', 'error-feedback-1')">me</span> <span onclick="checkError(this, false, '', 'error-feedback-1')">their</span> <span onclick="checkError(this, false, '', 'error-feedback-1')">greatest</span> <span onclick="checkError(this, false, '', 'error-feedback-1')">surprise</span>."
+                </div>
+                <p id="error-feedback-1" class="text-center text-gray-400 text-2xl h-10 font-bold"></p>
+            </div>
+        </section>
+
+        <!-- STEP 6: Grammar Machine 2 (Crystals) -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel text-center">
+                <div class="capsule mb-6" style="border-color:#2ecc71; color:#2ecc71;">Task 4: Irregular Verbs</div>
+                <h2 class="netflix-title text-6xl mb-6">Kryptonian Crystals</h2>
+                <p class="text-2xl text-gray-200 mb-12">Irregular verbs change their form. Click "CONVERT" to reveal the past form in the memory crystals.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                    <div class="flex flex-col gap-4">
+                        <span class="text-gray-400 font-bold uppercase tracking-widest text-sm">Present: Tell</span>
+                        <div id="crystal-1" class="crystal-slot">?</div>
+                        <button class="crystal-btn border-2 border-superBlue text-superBlue py-2 rounded font-bold hover:bg-superBlue hover:text-white transition-colors" onclick="activateCrystal(1, 'TOLD')">Convert</button>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <span class="text-gray-400 font-bold uppercase tracking-widest text-sm">Present: Meet</span>
+                        <div id="crystal-2" class="crystal-slot">?</div>
+                        <button class="crystal-btn border-2 border-superBlue text-superBlue py-2 rounded font-bold hover:bg-superBlue hover:text-white transition-colors" onclick="activateCrystal(2, 'MET')">Convert</button>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <span class="text-gray-400 font-bold uppercase tracking-widest text-sm">Present: Fall</span>
+                        <div id="crystal-3" class="crystal-slot">?</div>
+                        <button class="crystal-btn border-2 border-superBlue text-superBlue py-2 rounded font-bold hover:bg-superBlue hover:text-white transition-colors" onclick="activateCrystal(3, 'FELL')">Convert</button>
+                    </div>
+                </div>
+                <p id="crystal-feedback" class="text-superYellow font-bold text-2xl h-8 opacity-0 transition-opacity">Memory Cores Online!</p>
+            </div>
+        </section>
+
+        <!-- STEP 7: Syntax Builder 2 (Irregular) -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel">
+                <div class="inline-flex items-center gap-3 text-superBlue mb-4">
+                    <i data-lucide="layers" class="w-8 h-8"></i>
+                    <span class="font-bold tracking-widest text-xl uppercase">Task 5: Irregular Verbs</span>
+                </div>
+                <h2 class="netflix-title text-6xl mb-6">The Revelation</h2>
+                <p class="text-gray-300 mb-10 text-2xl">Unscramble the words to build the sentence using an irregular verb.</p>
+
+                <div id="dropzone-2" class="sb-dropzone mb-10" ondragover="event.preventDefault()"></div>
+                
+                <div id="wordbank-2" class="flex flex-wrap justify-center gap-6 mb-10">
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-2', 'wordbank-2')">Lois</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-2', 'wordbank-2')">I</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-2', 'wordbank-2')">was</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-2', 'wordbank-2')">really</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-2', 'wordbank-2')">told</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-2', 'wordbank-2')">who</div>
+                    <div class="sb-word" onclick="moveWord(this, 'dropzone-2', 'wordbank-2')">I</div>
+                </div>
+
+                <button onclick="checkSentenceBuilder('dropzone-2', ['I', 'told', 'Lois', 'who', 'I', 'really', 'was'])" class="btn-netflix w-full">Verify Syntax</button>
+                <p id="sb-feedback-2" class="text-center mt-8 hidden font-bold text-3xl"></p>
+            </div>
+        </section>
+
+        <!-- STEP 8: Grammar Machine 3 (Phantom Zone) -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel text-center">
+                <div class="capsule mb-6" style="border-color:#e60000; color:#e60000;">Task 6: The Negative Form</div>
+                <h2 class="netflix-title text-6xl mb-6">Phantom Zone Projector</h2>
+                <p class="text-2xl text-gray-200 mb-10 leading-relaxed">To say "NO" in the past, use <strong class="text-superRed">didn't</strong> and the verb goes back to normal. Send the past verb into the Phantom Zone!</p>
+                
+                <div class="flex justify-center items-center gap-16 mb-10">
+                    <div class="flex flex-col gap-6">
+                        <button class="grammar-btn" onclick="updateGrammarNeg('stay', this)">Stayed</button>
+                        <button class="grammar-btn" onclick="updateGrammarNeg('know', this)">Knew</button>
+                    </div>
+                    <div class="phantom-slot" id="phantom-box">
+                        ?
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 9: Chat Scenario -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel">
+                <div class="inline-flex items-center gap-3 text-superYellow mb-4">
+                    <i data-lucide="message-square" class="w-8 h-8"></i>
+                    <span class="font-bold tracking-widest text-xl uppercase">Task 7: Chat Scenario</span>
+                </div>
+                <h2 class="netflix-title text-6xl mb-6">Daily Planet Texts</h2>
+                <p class="text-gray-300 mb-8 text-2xl">Lois texts her friend. Choose the correct negative form to complete the sentence.</p>
+
+                <div class="bg-black/80 p-8 rounded-xl border border-gray-700 flex flex-col gap-6 mb-8">
+                    <div class="bg-gray-700 text-white p-4 rounded-xl max-w-[80%] self-start text-xl">
+                        Did Clark stay in Smallville when he grew up?
+                    </div>
+                    <div class="bg-superBlue text-white p-4 rounded-xl max-w-[80%] self-end text-xl">
+                        No, he didn't ______ there. He moved to Metropolis.
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4 max-w-3xl mx-auto w-full" id="quiz-3">
+                    <div class="quiz-option" onclick="checkQuiz(this, 'quiz-3', true)">
+                        <div class="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center shrink-0 text-base">A</div>
+                        stay
+                    </div>
+                    <div class="quiz-option" onclick="checkQuiz(this, 'quiz-3', false)">
+                        <div class="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center shrink-0 text-base">B</div>
+                        stayed
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 10: Writing Challenge -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel">
+                <div class="inline-flex items-center gap-3 text-success mb-4">
+                    <i data-lucide="edit-3" class="w-8 h-8"></i>
+                    <span class="font-bold tracking-widest text-xl uppercase">Task 8: Writing</span>
+                </div>
+                <h2 class="netflix-title text-6xl mb-6">Reporter's Log</h2>
+                <p class="text-gray-300 mb-6 text-2xl">Write an article about your past weekend.</p>
+                <p class="text-gray-400 mb-8 text-xl">Write <strong>two</strong> things you did (Ex: I watched a movie).<br>Write <strong>one</strong> thing you didn't do (Ex: I didn't study).</p>
+
+                <textarea id="writing-area" class="w-full h-48 bg-black/60 border-2 border-gray-700 rounded-2xl p-6 text-xl text-white outline-none focus:border-superBlue transition-all shadow-inner" placeholder="Type your log here..."></textarea>
+                
+                <button onclick="submitHomework()" id="save-btn" class="btn-netflix w-full mt-8">Submit Log</button>
+                <p id="save-feedback" class="text-center mt-4 hidden font-bold text-2xl text-success">Log Saved to Archives!</p>
+            </div>
+        </section>
+
+        <!-- STEP 11: Wrap-up -->
+        <section class="step-container flex-col" data-bg="">
+            <div class="glass-panel text-center border border-gray-700">
+                <div class="w-28 h-28 bg-success rounded-full flex items-center justify-center mx-auto mb-10 shadow-[0_0_50px_rgba(43,147,72,0.6)]">
+                    <i data-lucide="shield-check" class="w-16 h-16 text-white"></i>
+                </div>
+                <h2 class="netflix-title text-[7rem] text-white mb-4 drop-shadow-2xl leading-none">Homework Complete</h2>
+                <p class="text-2xl text-superYellow mb-10 uppercase tracking-[0.3em] font-bold">You mastered the Simple Past!</p>
+                
+                <button onclick="window.close()" class="btn-netflix flex items-center justify-center gap-4 py-4 text-2xl mx-auto w-full max-w-md">
+                    <i data-lucide="power" class="w-8 h-8 fill-current"></i>
+                    Close Interface
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Fixed Bottom Footer -->
+    <footer class="h-24 bg-black/95 border-t border-gray-800 flex justify-between items-center px-10 shrink-0 relative z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+        <button id="btn-prev" onclick="prevStep()" class="px-8 py-3 border-2 border-gray-600 text-white hover:border-white hover:bg-white/5 transition-all rounded-lg uppercase font-bold text-lg tracking-widest disabled:opacity-20 flex items-center gap-3">
+            <i data-lucide="chevron-left" class="w-6 h-6"></i> Back
+        </button>
+        
+        <div class="text-lg text-gray-400 font-bold tracking-widest uppercase hidden sm:block">
+            Task <span id="current-step-display" class="text-white text-xl mx-2">1</span> / 11
+        </div>
+
+        <button id="btn-next" onclick="nextStep()" class="px-8 py-3 bg-superRed text-white hover:bg-red-700 transition-all rounded-lg uppercase font-bold text-lg tracking-widest disabled:opacity-20 flex items-center gap-3 shadow-[0_0_15px_rgba(230,0,0,0.4)]">
+            Next <i data-lucide="chevron-right" class="w-6 h-6"></i>
+        </button>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // --- Navigation Logic ---
+        let currentStep = 0;
+        const steps = document.querySelectorAll('.step-container');
+        const totalSteps = steps.length;
+        const progressBar = document.getElementById('progress-bar');
+        const stepDisplay = document.getElementById('current-step-display');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+
+        function updateUI() {
+            steps.forEach((step, index) => {
+                if(index === currentStep) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+
+            const progressPercentage = ((currentStep) / (totalSteps - 1)) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            stepDisplay.innerText = currentStep + 1;
+
+            btnPrev.disabled = currentStep === 0;
+            btnNext.style.display = currentStep === totalSteps - 1 ? 'none' : 'flex';
+        }
+
+        function nextStep() { if (currentStep < totalSteps - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        updateUI();
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowRight') nextStep();
+            if(e.key === 'ArrowLeft') prevStep();
+        });
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+
+        // --- Logic: Quizzes ---
+        function checkQuiz(element, quizId, isCorrect) {
+            const container = document.getElementById(quizId);
+            const options = container.querySelectorAll('.quiz-option');
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            if(isCorrect) {
+                element.classList.add('correct');
+                setTimeout(() => nextStep(), 1500);
+            } else {
+                element.classList.add('incorrect');
+            }
+        }
+
+        // --- Logic: Syntax Builders ---
+        function moveWord(element, dropzoneId, wordbankId) {
+            const dropzone = document.getElementById(dropzoneId);
+            const wordbank = document.getElementById(wordbankId);
+            dropzone.classList.remove('correct', 'incorrect');
+            if (element.parentElement.id === wordbankId) dropzone.appendChild(element);
+            else wordbank.appendChild(element);
+        }
+
+        function checkSentenceBuilder(dropzoneId, correctArray) {
+            const dropzone = document.getElementById(dropzoneId);
+            const words = Array.from(dropzone.children).map(child => child.innerText);
+            const feedback = document.getElementById('sb-feedback-' + dropzoneId.split('-')[1]);
+            feedback.classList.remove('hidden');
+
+            if (words.length !== correctArray.length) {
+                dropzone.className = 'sb-dropzone incorrect mb-10';
+                feedback.innerText = "Use all blocks!";
+                feedback.className = "text-center mt-8 text-superRed font-bold text-3xl";
+                return;
+            }
+
+            if (words.every((val, i) => val === correctArray[i])) {
+                dropzone.className = 'sb-dropzone correct mb-10';
+                feedback.innerText = "Syntax Accepted.";
+                feedback.className = "text-center mt-8 text-success font-bold text-3xl";
+                setTimeout(() => nextStep(), 1500);
+            } else {
+                dropzone.className = 'sb-dropzone incorrect mb-10';
+                feedback.innerText = "Syntax Error. Try again.";
+                feedback.className = "text-center mt-8 text-superRed font-bold text-3xl";
+            }
+        }
+
+        // --- Logic: Heat Vision (Error Detection) ---
+        function checkError(element, isActualError, correctWord, feedbackId) {
+            element.parentElement.querySelectorAll('span').forEach(s => s.className = '');
+            const feedback = document.getElementById(feedbackId);
+            if(isActualError) {
+                element.classList.add('wrong-clicked');
+                element.innerText = correctWord;
+                feedback.innerText = "Kryptonite Destroyed! Spell Check passed.";
+                feedback.style.color = "#2ecc71";
+                setTimeout(() => nextStep(), 2000);
+            } else {
+                element.classList.add('correct-clicked');
+                feedback.innerText = "Word is correct. Keep scanning.";
+                feedback.style.color = "#e60000";
+            }
+        }
+
+        // --- Logic: Kryptonian Crystals ---
+        let crystalsActivated = 0;
+        function activateCrystal(id, pastVerb) {
+            const crystal = document.getElementById('crystal-' + id);
+            if(!crystal.classList.contains('activated')) {
+                crystal.innerText = pastVerb;
+                crystal.classList.add('activated');
+                crystalsActivated++;
+                if(crystalsActivated === 3) {
+                    const fb = document.getElementById('crystal-feedback');
+                    fb.style.opacity = '1';
+                    setTimeout(() => nextStep(), 2500);
+                }
+            }
+        }
+
+        // --- Logic: Phantom Zone (Negative) ---
+        function updateGrammarNeg(verb, btnElement) {
+            document.querySelectorAll('.grammar-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            const box = document.getElementById('phantom-box');
+            box.classList.add('activated');
+            
+            if(verb === 'stay') {
+                box.innerHTML = `<span class="text-white text-sm block mb-1 uppercase tracking-widest">Negative</span>didn't<br>stay`;
+            }
+            if(verb === 'know') {
+                box.innerHTML = `<span class="text-white text-sm block mb-1 uppercase tracking-widest">Negative</span>didn't<br>know`;
+            }
+            
+            setTimeout(() => {
+                box.classList.remove('activated');
+            }, 800);
+        }
+
+        // --- Logic: Homework Submission ---
+        function submitHomework() {
+            const text = document.getElementById('writing-area').value;
+            if(text.trim().length > 15) {
+                const btn = document.getElementById('save-btn');
+                btn.innerHTML = 'Log Published';
+                btn.style.backgroundColor = '#2b9348';
+                btn.style.boxShadow = '0 0 20px rgba(43,147,72,0.6)';
+                btn.disabled = true;
+                document.getElementById('save-feedback').classList.remove('hidden');
+                setTimeout(() => nextStep(), 2000);
+            } else {
+                alert("Please write your log before submitting.");
+            }
+        }
+    </script>
+</body>
+</html>
